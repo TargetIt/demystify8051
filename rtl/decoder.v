@@ -39,7 +39,21 @@ module decoder (
     wire is_orl  = (opcode[7:4] == 4'b0100) && (opcode[3:0] <= 4'hF);
     // XRL: 0x64(#imm), 0x65(direct), 0x66-67(@Ri), 0x68-6F(Rn)
     wire is_xrl  = (opcode[7:4] == 4'b0110) && (opcode[3:0] <= 4'hF);
-    wire is_mov  = (ir[6:5] == 2'b11) || (ir[6:3] == 4'b0111);
+    // MOV instructions that access IRAM or SFR (not register-only)
+    wire is_mov_mem = (opcode[7:0] == 8'h74)  // MOV A,#imm: internal_bus needs op1
+                   || (opcode[7:0] == 8'hE5)  // MOV A,direct
+                   || (opcode[7:0] == 8'hF5)  // MOV direct,A
+                   || (opcode[7:0] == 8'h85)  // MOV direct,direct
+                   || (opcode[7:0] == 8'h75)  // MOV direct,#imm
+                   || (opcode[7:0] == 8'h76) || (opcode[7:0] == 8'h77)  // MOV @Ri,#imm
+                   || (opcode[7:0] == 8'hA6) || (opcode[7:0] == 8'hA7)  // MOV @Ri,direct
+                   || (opcode[7:0] == 8'h86) || (opcode[7:0] == 8'h87)  // MOV direct,@Ri
+                   || (opcode[7:0] == 8'hE6) || (opcode[7:0] == 8'hE7)  // MOV A,@Ri
+                   || (opcode[7:0] == 8'hF6) || (opcode[7:0] == 8'hF7)  // MOV @Ri,A
+                   || (opcode[7:0] == 8'h90)  // MOV DPTR,#imm16
+                   || (opcode[7:3] == 5'b01111); // MOV Rn,#imm (78-7F)
+    // Legacy is_mov kept for acc_write compatibility — but we use is_mov_op instead now
+    wire is_mov  = is_mov_mem;
     wire is_movx = (ir[6:0] == 7'hE0) || (ir[6:0] == 7'hE2) || (ir[6:0] == 7'hE3);
     wire is_push = (ir[6:0] == 7'hC0);
     wire is_pop  = (ir[6:0] == 7'hD0);
@@ -51,18 +65,20 @@ module decoder (
     wire is_call = (ir[6:5] == 2'b00) && (ir[4:0] == 5'b10001) || (ir[6:0] == 7'h12);
     wire is_ret  = (ir[6:0] == 7'h22);
     wire is_reti = (ir[6:0] == 7'h32);
-    wire is_mul  = (ir[6:0] == 7'hA4);
-    wire is_div  = (ir[6:0] == 7'h84);
-    wire is_da   = (ir[6:0] == 7'hD4);
-    wire is_inc  = (ir[6:3] == 4'b0000) && (ir[2:0] != 3'b000);
-    wire is_dec  = (ir[6:3] == 4'b0001);
-    wire is_rl   = (ir[6:0] == 7'h23);
-    wire is_rlc  = (ir[6:0] == 7'h33);
-    wire is_rr   = (ir[6:0] == 7'h03);
-    wire is_rrc  = (ir[6:0] == 7'h13);
-    wire is_swap = (ir[6:0] == 7'hC4);
-    wire is_cpl  = (ir[6:0] == 7'hF4);
-    wire is_clr  = (ir[6:0] == 7'hE4);
+    wire is_mul  = (opcode[7:0] == 8'hA4);
+    wire is_div  = (opcode[7:0] == 8'h84);
+    wire is_da   = (opcode[7:0] == 8'hD4);
+    // INC: 0x04(A), 0x05(dir), 0x06-07(@Ri), 0x08-0F(Rn)
+    wire is_inc  = (opcode[7:4] == 4'b0000) && (opcode[3:0] != 4'h0);
+    // DEC: 0x14(A), 0x15(dir), 0x16-17(@Ri), 0x18-1F(Rn)
+    wire is_dec  = (opcode[7:4] == 4'b0001) && (opcode[3:0] != 4'h0);
+    wire is_rl   = (opcode[7:0] == 8'h23);
+    wire is_rlc  = (opcode[7:0] == 8'h33);
+    wire is_rr   = (opcode[7:0] == 8'h03);
+    wire is_rrc  = (opcode[7:0] == 8'h13);
+    wire is_swap = (opcode[7:0] == 8'hC4);
+    wire is_cpl  = (opcode[7:0] == 8'hF4);
+    wire is_clr  = (opcode[7:0] == 8'hE4);
 
     // ALU operation encoding
     assign alu_op = is_add  ? 4'h0 : is_addc ? 4'h1 : is_subb ? 4'h2 :
