@@ -1,0 +1,9 @@
+{
+  "total_cells": 8534,
+  "total_drivers": 8534,
+  "total_readers": 8520,
+  "registers": 1626,
+  "driven_only_wires": 16,
+  "read_only_wires": 2,
+  "bidirectional_wires": 8518
+}
