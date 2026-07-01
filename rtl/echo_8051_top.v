@@ -187,18 +187,22 @@ module echo_8051_top (
     // ── Internal data bus mux ──
     wire reg_wr_imm = reg_wr && (ir[7:3] == 5'b01111); // MOV Rn,#imm
     wire reg_wr_acc = reg_wr && (ir[7:3] == 5'b11111); // MOV Rn,A
+    wire is_mov_dir_a   = (ir == 8'hF5); // MOV direct,A: route ACC to SFR
+    wire is_mov_dir_imm = (ir == 8'h75); // MOV direct,#imm: route op2 to SFR
     wire cy_active  = is_cy_op && exec_en;
     wire [7:0] cy_data = (ir == 8'hC3) ? (psw_val & 8'h7F) :
                          (ir == 8'hD3) ? (psw_val | 8'h80) :
                          (psw_val ^ 8'h80); // CPL C
-    assign internal_bus = reg_rd     ? rf_rdata :
-                          is_mov_op  ? op1 :
-                          reg_wr_imm ? op1 :     // MOV Rn,#imm data
-                          reg_wr_acc ? acc :     // MOV Rn,A data
-                          cy_active  ? cy_data : // CLR/SETB/CPL C
-                          ram_rd     ? iram_rdata :
-                          sfr_rd     ? sfr_rdata :
-                          acc_write  ? alu_result :
+    assign internal_bus = reg_rd         ? rf_rdata :
+                          is_mov_op      ? op1 :
+                          reg_wr_imm     ? op1 :     // MOV Rn,#imm data
+                          reg_wr_acc     ? acc :     // MOV Rn,A data
+                          is_mov_dir_a   ? acc :     // MOV direct,A data
+                          is_mov_dir_imm ? op2 :     // MOV direct,#imm data
+                          cy_active      ? cy_data : // CLR/SETB/CPL C
+                          ram_rd         ? iram_rdata :
+                          sfr_rd         ? sfr_rdata :
+                          acc_write      ? alu_result :
                           8'h00;
 
     // ── Address bus ──
@@ -248,9 +252,24 @@ module echo_8051_top (
             if (sp_dec) sp <= sp - 8'd1;
             // Write only during EXEC2 (state 3), not WRITEBK (state 4)
             // to avoid double-write with updated ALU inputs
+            // Sync top-level b_reg from SFR write to B (0xF0)
+            if (sfr_wr && addr_bus[7:0] == 8'hF0) b_reg <= internal_bus;
+
             if (exec_en && fsm_state == 3'd3) begin
-                if (acc_write) acc <= internal_bus;
-                if (b_write)   b_reg <= internal_bus;
+                // MUL AB / DIV AB handled directly (not in ALU)
+                if (ir == 8'hA4) begin // MUL AB
+                    {b_reg, acc} <= acc * b_reg;
+                end else if (ir == 8'h84) begin // DIV AB
+                    if (b_reg != 8'd0) begin
+                        acc <= acc / b_reg;
+                        b_reg <= acc % b_reg;
+                    end else begin
+                        acc <= 8'hFF; b_reg <= 8'hFF; // divide by zero
+                    end
+                end else begin
+                    if (acc_write) acc <= internal_bus;
+                    if (b_write)   b_reg <= internal_bus;
+                end
                 if (reg_wr) begin
                     case (ir[2:0])
                         3'd0: R0 <= internal_bus;
