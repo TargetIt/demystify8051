@@ -1,0 +1,32 @@
+# Yosys Formal Equivalence Check
+# Compares echo_8051 RTL against original gate-level netlist
+# Method: sequential equivalence (equiv_induct) at top-level I/O ports
+
+# ---- Read RTL (golden) ----
+read_verilog -sv ../rtl/alu.v
+read_verilog -sv ../rtl/decoder.v
+read_verilog -sv ../rtl/control_fsm.v
+read_verilog -sv ../rtl/psw.v
+read_verilog -sv ../rtl/iram.v
+read_verilog -sv ../rtl/sfr_block.v
+read_verilog -sv ../rtl/timer.v
+read_verilog -sv ../rtl/uart.v
+read_verilog -sv ../rtl/intc.v
+read_verilog -sv ../rtl/io_ports.v
+read_verilog -sv ../rtl/echo_8051_top.v
+rename echo_8051_top gold
+hierarchy -top gold
+
+# ---- Read gate-level netlist (target) ----
+read_verilog -sv ../input/echo_8051_synth.v
+rename echo_8051_top gate
+hierarchy -top gate
+
+# ---- Setup equivalence ----
+# Map corresponding ports
+equiv_make gold gate equiv
+prep -top equiv
+
+# ---- Run inductive proof ----
+equiv_induct -seq 10 equiv
+equiv_status -assert equiv
