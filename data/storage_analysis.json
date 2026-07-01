@@ -1,0 +1,12 @@
+{
+  "iram": {
+    "cells": 97,
+    "ffs": 51
+  },
+  "sfr": {
+    "cells": 108,
+    "ffs": 46,
+    "ctrl_connections": 0
+  },
+  "unclassified": 0
+}
