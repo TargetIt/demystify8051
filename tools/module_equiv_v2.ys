@@ -1,0 +1,56 @@
+# Module-level formal equivalence using Yosys select/submod
+# Approach: load full gate netlist, select cells by bus connection,
+# create submodule, compare with RTL module
+
+# ── Shared PDK ──
+read_verilog -sv \
+  /Users/jiuri/tools/pdks/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd__blackbox.v
+
+# ── Load RTL modules ──
+read_verilog -sv rtl/psw.v rtl/alu.v rtl/iram.v rtl/decoder.v
+rename psw rtl_psw
+rename alu rtl_alu
+rename iram rtl_iram
+rename decoder rtl_decoder
+
+# ── Load gate netlist ──
+read_verilog -sv input/echo_8051_synth.v
+# Gate is now echo_8051_top
+
+# ── PSW Module Equivalence ──
+# Select cells connected to PSW bus (_07104_ = flags)
+select -set psw_cells c:sky130_fd_sc_hd__* w:*_07104_*
+select -add psw_cells @psw_cells %d
+select -add psw_cells @psw_cells %d
+
+# Create gate submodule
+submod -name gate_psw -copy psw_cells
+
+# Run equivalence
+equiv_make rtl_psw gate_psw psw_check
+prep -top psw_check
+clk2fflogic
+async2sync
+equiv_induct -seq 4 -ignore-unknown-cells psw_check
+equiv_status -assert psw_check
+
+# ── ALU Module Equivalence ──
+design -reset
+read_verilog -sv \
+  /Users/jiuri/tools/pdks/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd__blackbox.v \
+  rtl/alu.v input/echo_8051_synth.v
+rename alu rtl_alu
+
+# Select ALU cells: connected to ACC, DB_B, DBUS buses
+select -set alu_cells c:sky130_fd_sc_hd__* w:*_07109_* w:*_07121_* w:*_07076_* w:*_07057_* w:*_07067_*
+select -add alu_cells @alu_cells %d
+select -add alu_cells @alu_cells %d
+select -add alu_cells @alu_cells %d
+
+submod -name gate_alu -copy alu_cells
+equiv_make rtl_alu gate_alu alu_check
+prep -top alu_check
+clk2fflogic
+async2sync
+equiv_induct -seq 4 -ignore-unknown-cells alu_check
+equiv_status -assert alu_check
