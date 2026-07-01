@@ -1,0 +1,32 @@
+{
+  "control_fsm": {
+    "ctrl_ffs": 8,
+    "state_ffs": 8
+  },
+  "timer": {
+    "cells": 132,
+    "tcon_readers": 22
+  },
+  "uart": {
+    "cells": 88
+  },
+  "intc": {
+    "cells": 26
+  },
+  "module_ffs": {
+    "Decoder": 7,
+    "ACC": 8,
+    "B": 8,
+    "PC": 16,
+    "CTRL": 8,
+    "PSW": 3,
+    "DataPath": 24,
+    "SFR_DIN": 8,
+    "SFR_DOUT": 8,
+    "IRAM_ADDR": 8,
+    "IRAM_DATA": 3,
+    "Timer": 46,
+    "UART": 16,
+    "IntC": 12
+  }
+}
