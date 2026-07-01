@@ -1,0 +1,112 @@
+# Module-level formal equivalence check
+# Compares each RTL module against its extracted gate-level counterpart
+# Usage: yosys -c tools/module_equiv.ys
+
+# Load PDK blackboxes
+read_verilog -sv \
+  /Users/jiuri/tools/pdks/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd__blackbox.v
+
+# ── ALU equivalence ──
+design -reset
+read_verilog -sv rtl/alu.v gate_modules/alu_gate.v
+proc
+rename alu gold
+rename alu_gate gate
+equiv_make gold gate alu_equiv
+prep -top alu_equiv
+clk2fflogic
+async2sync
+equiv_induct -seq 4 -ignore-unknown-cells alu_equiv
+equiv_status -assert alu_equiv
+
+# ── Decoder equivalence ──
+design -reset
+read_verilog -sv \
+  /Users/jiuri/tools/pdks/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd__blackbox.v \
+  rtl/decoder.v gate_modules/decoder_gate.v
+proc
+rename decoder gold
+rename decoder_gate gate
+equiv_make gold gate decoder_equiv
+prep -top decoder_equiv
+clk2fflogic
+async2sync
+equiv_induct -seq 4 -ignore-unknown-cells decoder_equiv
+equiv_status -assert decoder_equiv
+
+# ── PSW equivalence ──
+design -reset
+read_verilog -sv \
+  /Users/jiuri/tools/pdks/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd__blackbox.v \
+  rtl/psw.v gate_modules/psw_gate.v
+proc
+rename psw gold
+rename psw_gate gate
+equiv_make gold gate psw_equiv
+prep -top psw_equiv
+clk2fflogic
+async2sync
+equiv_induct -seq 4 -ignore-unknown-cells psw_equiv
+equiv_status -assert psw_equiv
+
+# ── IRAM equivalence ──
+design -reset
+read_verilog -sv \
+  /Users/jiuri/tools/pdks/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd__blackbox.v \
+  rtl/iram.v gate_modules/iram_gate.v
+proc
+memory -nomap
+rename iram gold
+rename iram_gate gate
+equiv_make gold gate iram_equiv
+prep -top iram_equiv
+clk2fflogic
+async2sync
+equiv_induct -seq 4 -ignore-unknown-cells iram_equiv
+equiv_status -assert iram_equiv
+
+# ── SFR equivalence ──
+design -reset
+read_verilog -sv \
+  /Users/jiuri/tools/pdks/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd__blackbox.v \
+  rtl/sfr_block.v gate_modules/sfr_gate.v
+proc
+memory -nomap
+rename sfr_block gold
+rename sfr_gate gate
+equiv_make gold gate sfr_equiv
+prep -top sfr_equiv
+clk2fflogic
+async2sync
+equiv_induct -seq 4 -ignore-unknown-cells sfr_equiv
+equiv_status -assert sfr_equiv
+
+# ── Timer equivalence ──
+design -reset
+read_verilog -sv \
+  /Users/jiuri/tools/pdks/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd__blackbox.v \
+  rtl/timer.v gate_modules/timer_gate.v
+proc
+rename timer gold
+rename timer_gate gate
+equiv_make gold gate timer_equiv
+prep -top timer_equiv
+clk2fflogic
+async2sync
+equiv_induct -seq 4 -ignore-unknown-cells timer_equiv
+equiv_status -assert timer_equiv
+
+# ── UART equivalence ──
+design -reset
+read_verilog -sv \
+  /Users/jiuri/tools/pdks/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd__blackbox.v \
+  rtl/uart.v gate_modules/uart_gate.v
+proc
+rename uart gold
+rename uart_gate gate
+equiv_make gold gate uart_equiv
+prep -top uart_equiv
+clk2fflogic
+async2sync
+equiv_induct -seq 4 -ignore-unknown-cells uart_equiv
+equiv_status -assert uart_equiv
