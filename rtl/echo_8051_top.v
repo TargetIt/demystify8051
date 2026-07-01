@@ -82,14 +82,14 @@ module echo_8051_top (
     // ════════════════════════════════════════
 
     // Decoder
-    wire is_mov_op, use_imm, reg_rd, reg_wr, is_cy_op;
+    wire is_mov_op, use_imm, reg_rd, reg_wr, is_cy_op, is_djnz;
     decoder u_decoder (
         .opcode(ir), .alu_op(alu_op),
         .acc_write(acc_write), .b_write(b_write), .psw_write(psw_write),
         .ram_rd(ram_rd), .ram_wr(ram_wr), .sfr_rd(sfr_rd), .sfr_wr(sfr_wr),
         .pc_inc(pc_inc), .pc_load(pc_load), .sp_inc(sp_inc), .sp_dec(sp_dec),
         .operand_bytes(operand_bytes), .is_mov_op(is_mov_op), .use_imm(use_imm),
-        .reg_rd(reg_rd), .reg_wr(reg_wr), .is_cy_op(is_cy_op)
+        .reg_rd(reg_rd), .reg_wr(reg_wr), .is_cy_op(is_cy_op), .is_djnz(is_djnz)
     );
 
     // Register file rf_rdata — declared early for alu_a reference below
@@ -238,14 +238,17 @@ module echo_8051_top (
                 end
                 if (pc_inc) pc <= pc + 16'd1;
             end
-            // pc_load during exec (SJMP/LJMP etc) — outside fetch_en block
-            if (pc_load && exec_en) begin
+            // pc_load during exec, only in EXEC2 to avoid double-fire
+            if (pc_load && exec_en && fsm_state == 3'd3) begin
                 if (ir == 8'h80) pc <= pc + {{8{op1[7]}}, op1}; // SJMP relative
-                else pc <= {op1, op2}; // LJMP/LCALL absolute
+                else if (is_djnz && alu_result != 8'd0) pc <= pc + {{8{op1[7]}}, op1}; // DJNZ relative
+                else if (!is_djnz) pc <= {op1, op2}; // LJMP/LCALL absolute
             end
             if (sp_inc) sp <= sp + 8'd1;
             if (sp_dec) sp <= sp - 8'd1;
-            if (exec_en) begin
+            // Write only during EXEC2 (state 3), not WRITEBK (state 4)
+            // to avoid double-write with updated ALU inputs
+            if (exec_en && fsm_state == 3'd3) begin
                 if (acc_write) acc <= internal_bus;
                 if (b_write)   b_reg <= internal_bus;
                 if (reg_wr) begin

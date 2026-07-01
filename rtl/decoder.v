@@ -21,19 +21,24 @@ module decoder (
     output wire        use_imm,          // ALU B-input = immediate (op1) instead of B register
     output wire        reg_rd,           // read R0-R7 register file
     output wire        reg_wr,           // write R0-R7 register file
-    output wire        is_cy_op          // CLR C / SETB C / CPL C
+    output wire        is_cy_op,         // CLR C / SETB C / CPL C
+    output wire        is_djnz           // DJNZ Rn,rel
 );
     wire [6:0] ir = opcode[6:0]; // 7-bit instruction register
 
     // Decode by opcode groups (derived from mux4_2 tree analysis)
-    wire is_add  = (ir[6:4] == 3'b001) && (ir[3:0] <= 4'hF);
+    // ADD: 0x24-0x2F (opcode[7:4]=0010)
+    wire is_add  = (opcode[7:4] == 4'b0010) && (opcode[3:0] <= 4'hF);
     wire is_addc = (ir[6:0] == 7'h35) || (ir[6:0] == 7'h36) || (ir[6:0] == 7'h37);
     wire is_subb = (ir[6:0] == 7'h95) || (ir[6:0] == 7'h96) || (ir[6:0] == 7'h97)
                 || (opcode[7:0] == 8'h94)  // SUBB A,#imm
                 || (ir[7:3] == 5'b10011);   // SUBB A,Rn (98-9F)
-    wire is_anl  = (ir[6:3] == 4'b0101);
-    wire is_orl  = (ir[6:3] == 4'b0100);
-    wire is_xrl  = (ir[6:3] == 4'b0110);
+    // ANL: 0x54(#imm), 0x55(direct), 0x56-57(@Ri), 0x58-5F(Rn)
+    wire is_anl  = (opcode[7:4] == 4'b0101) && (opcode[3:0] <= 4'hF);
+    // ORL: 0x44(#imm), 0x45(direct), 0x46-47(@Ri), 0x48-4F(Rn)
+    wire is_orl  = (opcode[7:4] == 4'b0100) && (opcode[3:0] <= 4'hF);
+    // XRL: 0x64(#imm), 0x65(direct), 0x66-67(@Ri), 0x68-6F(Rn)
+    wire is_xrl  = (opcode[7:4] == 4'b0110) && (opcode[3:0] <= 4'hF);
     wire is_mov  = (ir[6:5] == 2'b11) || (ir[6:3] == 4'b0111);
     wire is_movx = (ir[6:0] == 7'hE0) || (ir[6:0] == 7'hE2) || (ir[6:0] == 7'hE3);
     wire is_push = (ir[6:0] == 7'hC0);
@@ -42,6 +47,7 @@ module decoder (
     wire is_sjmp = (opcode[7:0] == 8'h80);
     wire is_ajmp = (opcode[4:0] == 5'b00001) && (opcode[7:5] != 3'b000);
     wire is_jmp  = is_ajmp || (opcode[7:0] == 8'h73) || (opcode[7:0] == 8'h02) || is_sjmp;
+    assign is_djnz = (opcode[7:4] == 4'hD) && (opcode[3:0] >= 4'h8) && (opcode[3:0] <= 4'hF); // DJNZ Rn,rel (D8-DF)
     wire is_call = (ir[6:5] == 2'b00) && (ir[4:0] == 5'b10001) || (ir[6:0] == 7'h12);
     wire is_ret  = (ir[6:0] == 7'h22);
     wire is_reti = (ir[6:0] == 7'h32);
@@ -90,7 +96,7 @@ module decoder (
 
     // Program flow
     assign pc_inc  = 1'b1; // PC increments during fetch
-    assign pc_load = is_jmp || is_call || is_ret || is_reti;
+    assign pc_load = is_jmp || is_call || is_ret || is_reti || is_djnz;
     assign sp_inc  = is_push || is_call;
     assign sp_dec  = is_pop || is_ret || is_reti;
 

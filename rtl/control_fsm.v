@@ -76,7 +76,7 @@ module control_fsm (
                 end
                 WRITEBK: begin
                     ctrl_out <= 8'h04; // write-back enable
-                    exec_en <= 1'b0;
+                    exec_en = 1'b0;     // blocking: prevent double-write in same cycle
                     state <= FETCH;
                 end
                 INT_ACK: begin
