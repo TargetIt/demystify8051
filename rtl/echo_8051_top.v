@@ -82,14 +82,14 @@ module echo_8051_top (
     // ════════════════════════════════════════
 
     // Decoder
-    wire is_mov_op, use_imm, reg_rd, reg_wr;
+    wire is_mov_op, use_imm, reg_rd, reg_wr, is_cy_op;
     decoder u_decoder (
         .opcode(ir), .alu_op(alu_op),
         .acc_write(acc_write), .b_write(b_write), .psw_write(psw_write),
         .ram_rd(ram_rd), .ram_wr(ram_wr), .sfr_rd(sfr_rd), .sfr_wr(sfr_wr),
         .pc_inc(pc_inc), .pc_load(pc_load), .sp_inc(sp_inc), .sp_dec(sp_dec),
         .operand_bytes(operand_bytes), .is_mov_op(is_mov_op), .use_imm(use_imm),
-        .reg_rd(reg_rd), .reg_wr(reg_wr)
+        .reg_rd(reg_rd), .reg_wr(reg_wr), .is_cy_op(is_cy_op)
     );
 
     // Register file rf_rdata — declared early for alu_a reference below
@@ -187,17 +187,22 @@ module echo_8051_top (
     // ── Internal data bus mux ──
     wire reg_wr_imm = reg_wr && (ir[7:3] == 5'b01111); // MOV Rn,#imm
     wire reg_wr_acc = reg_wr && (ir[7:3] == 5'b11111); // MOV Rn,A
+    wire cy_active  = is_cy_op && exec_en;
+    wire [7:0] cy_data = (ir == 8'hC3) ? (psw_val & 8'h7F) :
+                         (ir == 8'hD3) ? (psw_val | 8'h80) :
+                         (psw_val ^ 8'h80); // CPL C
     assign internal_bus = reg_rd     ? rf_rdata :
                           is_mov_op  ? op1 :
                           reg_wr_imm ? op1 :     // MOV Rn,#imm data
                           reg_wr_acc ? acc :     // MOV Rn,A data
+                          cy_active  ? cy_data : // CLR/SETB/CPL C
                           ram_rd     ? iram_rdata :
                           sfr_rd     ? sfr_rdata :
                           acc_write  ? alu_result :
                           8'h00;
 
     // ── Address bus ──
-    assign addr_bus = {8'h00, op1};
+    assign addr_bus = cy_active ? {8'h00, 8'hD0} : {8'h00, op1};
 
     // ── Instruction fetch ──
     reg [7:0] prom [0:4095]; // 4KB ROM
@@ -232,7 +237,11 @@ module echo_8051_top (
                     op2 <= prom[pc]; // actual 3rd byte
                 end
                 if (pc_inc) pc <= pc + 16'd1;
-                if (pc_load && exec_en) pc <= {op1, op2};
+            end
+            // pc_load during exec (SJMP/LJMP etc) — outside fetch_en block
+            if (pc_load && exec_en) begin
+                if (ir == 8'h80) pc <= pc + {{8{op1[7]}}, op1}; // SJMP relative
+                else pc <= {op1, op2}; // LJMP/LCALL absolute
             end
             if (sp_inc) sp <= sp + 8'd1;
             if (sp_dec) sp <= sp - 8'd1;

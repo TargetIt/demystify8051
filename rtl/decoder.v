@@ -20,7 +20,8 @@ module decoder (
     output wire        is_mov_op,        // high when MOV/move operation (not ALU)
     output wire        use_imm,          // ALU B-input = immediate (op1) instead of B register
     output wire        reg_rd,           // read R0-R7 register file
-    output wire        reg_wr            // write R0-R7 register file
+    output wire        reg_wr,           // write R0-R7 register file
+    output wire        is_cy_op          // CLR C / SETB C / CPL C
 );
     wire [6:0] ir = opcode[6:0]; // 7-bit instruction register
 
@@ -37,7 +38,10 @@ module decoder (
     wire is_movx = (ir[6:0] == 7'hE0) || (ir[6:0] == 7'hE2) || (ir[6:0] == 7'hE3);
     wire is_push = (ir[6:0] == 7'hC0);
     wire is_pop  = (ir[6:0] == 7'hD0);
-    wire is_jmp  = (ir[6:5] == 2'b00) && (ir[4:3] != 2'b00);
+    // AJMP: aaa00001, JMP @A+DPTR: 73, LJMP: 02
+    wire is_sjmp = (opcode[7:0] == 8'h80);
+    wire is_ajmp = (opcode[4:0] == 5'b00001) && (opcode[7:5] != 3'b000);
+    wire is_jmp  = is_ajmp || (opcode[7:0] == 8'h73) || (opcode[7:0] == 8'h02) || is_sjmp;
     wire is_call = (ir[6:5] == 2'b00) && (ir[4:0] == 5'b10001) || (ir[6:0] == 7'h12);
     wire is_ret  = (ir[6:0] == 7'h22);
     wire is_reti = (ir[6:0] == 7'h32);
@@ -68,6 +72,7 @@ module decoder (
     assign ram_wr = is_mem_op || is_push;
     assign sfr_rd = is_mem_op || is_push;
     assign sfr_wr = is_mem_op || is_pop;
+    // is_cy_op triggers sfr_wr through the top-level addr_bus mux instead
 
     // Register writes
     assign acc_write = is_add || is_addc || is_subb || is_anl || is_orl || is_xrl ||
@@ -75,7 +80,13 @@ module decoder (
                        is_swap || is_cpl || is_clr || is_mov_op || is_mul || is_div ||
                        is_pop || (opcode[7:3] == 5'b11101); // MOV A,Rn
     assign b_write = is_mul || is_div;
-    assign psw_write = is_add || is_addc || is_subb || is_mul || is_div || is_da;
+    assign psw_write = is_add || is_addc || is_subb || is_mul || is_div || is_da
+                     || (opcode[7:0] == 8'hC3) || (opcode[7:0] == 8'hD3) || (opcode[7:0] == 8'hB3);
+    // CLR C (C3), SETB C (D3), CPL C (B3)
+    wire is_clr_c  = (opcode[7:0] == 8'hC3);
+    wire is_setb_c = (opcode[7:0] == 8'hD3);
+    wire is_cpl_c  = (opcode[7:0] == 8'hB3);
+    assign is_cy_op = is_clr_c || is_setb_c || is_cpl_c;
 
     // Program flow
     assign pc_inc  = 1'b1; // PC increments during fetch
