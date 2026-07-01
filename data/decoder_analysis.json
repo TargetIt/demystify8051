@@ -1,0 +1,288 @@
+{
+  "ir_decoder": {
+    "l1_reader_count": 559,
+    "l2_signal_count": 559,
+    "top_l2_signals": [
+      [
+        "_01785_",
+        99
+      ],
+      [
+        "_01782_",
+        54
+      ],
+      [
+        "_01781_",
+        35
+      ],
+      [
+        "_01783_",
+        14
+      ],
+      [
+        "_03596_",
+        12
+      ],
+      [
+        "_03963_",
+        11
+      ],
+      [
+        "_04132_",
+        10
+      ],
+      [
+        "_03785_",
+        10
+      ],
+      [
+        "_03250_",
+        9
+      ],
+      [
+        "_03268_",
+        9
+      ],
+      [
+        "_03278_",
+        9
+      ],
+      [
+        "_03289_",
+        9
+      ],
+      [
+        "_03299_",
+        9
+      ],
+      [
+        "_03310_",
+        9
+      ],
+      [
+        "_03320_",
+        9
+      ],
+      [
+        "_04044_",
+        9
+      ],
+      [
+        "_03461_",
+        8
+      ],
+      [
+        "_03330_",
+        8
+      ],
+      [
+        "_05640_",
+        8
+      ],
+      [
+        "_05077_",
+        8
+      ],
+      [
+        "_03267_",
+        7
+      ],
+      [
+        "_03277_",
+        7
+      ],
+      [
+        "_03288_",
+        7
+      ],
+      [
+        "_03298_",
+        7
+      ],
+      [
+        "_03309_",
+        7
+      ],
+      [
+        "_03319_",
+        7
+      ],
+      [
+        "_01779_",
+        6
+      ],
+      [
+        "_03877_",
+        5
+      ],
+      [
+        "_03237_",
+        4
+      ],
+      [
+        "_03240_",
+        4
+      ]
+    ],
+    "cell_types": {
+      "sky130_fd_sc_hd__nand2_1": 17,
+      "sky130_fd_sc_hd__nand3_1": 10,
+      "sky130_fd_sc_hd__nor3_1": 6,
+      "sky130_fd_sc_hd__or3_1": 2,
+      "sky130_fd_sc_hd__and2_0": 3,
+      "sky130_fd_sc_hd__nor2_1": 54,
+      "sky130_fd_sc_hd__lpflow_inputiso1p_1": 1,
+      "sky130_fd_sc_hd__lpflow_isobufsrc_1": 1,
+      "sky130_fd_sc_hd__nand4_1": 1,
+      "sky130_fd_sc_hd__mux4_2": 242,
+      "sky130_fd_sc_hd__o21ai_0": 127,
+      "sky130_fd_sc_hd__a21oi_1": 26,
+      "sky130_fd_sc_hd__o221ai_1": 22,
+      "sky130_fd_sc_hd__o21a_1": 4,
+      "sky130_fd_sc_hd__a221oi_1": 5,
+      "sky130_fd_sc_hd__o31ai_1": 2,
+      "sky130_fd_sc_hd__a31oi_1": 5,
+      "sky130_fd_sc_hd__clkinv_1": 6,
+      "sky130_fd_sc_hd__o211ai_1": 7,
+      "sky130_fd_sc_hd__a311oi_1": 1,
+      "sky130_fd_sc_hd__o22ai_1": 4,
+      "sky130_fd_sc_hd__o21bai_1": 1,
+      "sky130_fd_sc_hd__a2111oi_0": 3,
+      "sky130_fd_sc_hd__a222oi_1": 1,
+      "sky130_fd_sc_hd__a221o_1": 1,
+      "sky130_fd_sc_hd__and3_1": 1,
+      "sky130_fd_sc_hd__o311ai_0": 1,
+      "sky130_fd_sc_hd__o22a_1": 1,
+      "sky130_fd_sc_hd__a31o_1": 2,
+      "sky130_fd_sc_hd__a211oi_1": 1,
+      "sky130_fd_sc_hd__o32a_1": 1
+    }
+  },
+  "data_path": {
+    "ACC": {
+      "bus": "_07109_",
+      "driver_count": 8,
+      "reader_count": 178,
+      "driver_types": [
+        [
+          "sky130_fd_sc_hd__dfrtp_1",
+          8
+        ]
+      ]
+    },
+    "DB_B": {
+      "bus": "_07121_",
+      "driver_count": 8,
+      "reader_count": 179,
+      "driver_types": [
+        [
+          "sky130_fd_sc_hd__dfrtp_1",
+          8
+        ]
+      ]
+    },
+    "PC": {
+      "bus": "_07111_",
+      "driver_count": 16,
+      "reader_count": 208,
+      "driver_types": [
+        [
+          "sky130_fd_sc_hd__dfrtp_1",
+          16
+        ]
+      ]
+    },
+    "DBUS_0": {
+      "bus": "_07076_",
+      "driver_count": 8,
+      "reader_count": 113,
+      "driver_types": [
+        [
+          "sky130_fd_sc_hd__dfrtp_1",
+          8
+        ]
+      ]
+    },
+    "DBUS_1": {
+      "bus": "_07057_",
+      "driver_count": 8,
+      "reader_count": 117,
+      "driver_types": [
+        [
+          "sky130_fd_sc_hd__dfrtp_1",
+          8
+        ]
+      ]
+    },
+    "DBUS_2": {
+      "bus": "_07067_",
+      "driver_count": 8,
+      "reader_count": 70,
+      "driver_types": [
+        [
+          "sky130_fd_sc_hd__dfrtp_1",
+          5
+        ],
+        [
+          "sky130_fd_sc_hd__dfstp_2",
+          3
+        ]
+      ]
+    },
+    "SFR_DOUT": {
+      "bus": "_07123_",
+      "driver_count": 8,
+      "reader_count": 35,
+      "driver_types": [
+        [
+          "sky130_fd_sc_hd__dfrtp_1",
+          8
+        ]
+      ]
+    },
+    "SFR_DIN": {
+      "bus": "_07108_",
+      "driver_count": 8,
+      "reader_count": 57,
+      "driver_types": [
+        [
+          "sky130_fd_sc_hd__dfrtp_1",
+          8
+        ]
+      ]
+    },
+    "IR": {
+      "bus": "_07126_",
+      "driver_count": 28,
+      "reader_count": 559,
+      "driver_types": [
+        [
+          "sky130_fd_sc_hd__mux2i_1",
+          21
+        ],
+        [
+          "sky130_fd_sc_hd__dfrtp_1",
+          7
+        ]
+      ]
+    },
+    "CTRL": {
+      "bus": "_07110_",
+      "driver_count": 8,
+      "reader_count": 132,
+      "driver_types": [
+        [
+          "sky130_fd_sc_hd__dfrtp_1",
+          8
+        ]
+      ]
+    }
+  },
+  "alu": {
+    "acc_readers": 178,
+    "dbb_readers": 179,
+    "alu_cells": 0,
+    "alu_cell_types": {},
+    "ctrl_to_alu": {}
+  }
+}
