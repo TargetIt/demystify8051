@@ -1,0 +1,274 @@
+{
+  "bus_labels": {
+    "IR": {
+      "bus": "_07126_",
+      "width": 7,
+      "desc": "Instruction Register"
+    },
+    "PC": {
+      "bus": "_07111_",
+      "width": 16,
+      "desc": "Program Counter"
+    },
+    "ACC": {
+      "bus": "_07109_",
+      "width": 8,
+      "desc": "Accumulator / Data Bus A"
+    },
+    "DB_B": {
+      "bus": "_07121_",
+      "width": 8,
+      "desc": "Data Bus B / ALU Input B"
+    },
+    "CTRL": {
+      "bus": "_07110_",
+      "width": 8,
+      "desc": "Control Signals"
+    },
+    "PSW_FLAGS": {
+      "bus": "_07104_",
+      "width": 3,
+      "desc": "PSW Flags (CY, AC, OV)"
+    },
+    "ADDR": {
+      "bus": "_07127_",
+      "width": 12,
+      "desc": "Address Bus"
+    },
+    "DBUS_0": {
+      "bus": "_07076_",
+      "width": 8,
+      "desc": "Data Bus Stage 0"
+    },
+    "DBUS_1": {
+      "bus": "_07057_",
+      "width": 8,
+      "desc": "Data Bus Stage 1"
+    },
+    "DBUS_2": {
+      "bus": "_07067_",
+      "width": 8,
+      "desc": "Data Bus Stage 2"
+    },
+    "SFR_DIN": {
+      "bus": "_07108_",
+      "width": 8,
+      "desc": "SFR Data Input"
+    },
+    "SFR_DOUT": {
+      "bus": "_07123_",
+      "width": 8,
+      "desc": "SFR Data Output"
+    },
+    "RAM_ADDR": {
+      "bus": "_07143_",
+      "width": 8,
+      "desc": "RAM Address"
+    },
+    "RAM_DATA": {
+      "bus": "_07112_",
+      "width": 3,
+      "desc": "RAM Data/Control"
+    },
+    "PC_LOW": {
+      "bus": "_07106_",
+      "width": 8,
+      "desc": "PC Low Byte"
+    }
+  },
+  "ff_bus_groups": [
+    {
+      "buses": [
+        "PC"
+      ],
+      "ff_count": 16,
+      "samples": [
+        "_15433_",
+        "_15439_",
+        "_15434_",
+        "_15441_",
+        "_15444_"
+      ]
+    },
+    {
+      "buses": [
+        "ADDR"
+      ],
+      "ff_count": 12,
+      "samples": [
+        "_14350_",
+        "_14351_",
+        "_14347_",
+        "_14348_",
+        "_14352_"
+      ]
+    },
+    {
+      "buses": [
+        "CTRL"
+      ],
+      "ff_count": 8,
+      "samples": [
+        "_15453_",
+        "_15454_",
+        "_15452_",
+        "_15456_",
+        "_15455_"
+      ]
+    },
+    {
+      "buses": [
+        "DBUS_1"
+      ],
+      "ff_count": 8,
+      "samples": [
+        "_14335_",
+        "_14338_",
+        "_14334_",
+        "_14331_",
+        "_14332_"
+      ]
+    },
+    {
+      "buses": [
+        "ACC"
+      ],
+      "ff_count": 8,
+      "samples": [
+        "_15467_",
+        "_15472_",
+        "_15465_",
+        "_15466_",
+        "_15468_"
+      ]
+    },
+    {
+      "buses": [
+        "DBUS_0"
+      ],
+      "ff_count": 8,
+      "samples": [
+        "_14278_",
+        "_14275_",
+        "_14276_",
+        "_14277_",
+        "_14280_"
+      ]
+    },
+    {
+      "buses": [
+        "DB_B"
+      ],
+      "ff_count": 8,
+      "samples": [
+        "_15426_",
+        "_15427_",
+        "_15423_",
+        "_15424_",
+        "_15425_"
+      ]
+    },
+    {
+      "buses": [
+        "DBUS_2"
+      ],
+      "ff_count": 8,
+      "samples": [
+        "_14323_",
+        "_14324_",
+        "_14325_",
+        "_14329_",
+        "_14327_"
+      ]
+    },
+    {
+      "buses": [
+        "SFR_DIN"
+      ],
+      "ff_count": 8,
+      "samples": [
+        "_15480_",
+        "_15473_",
+        "_15474_",
+        "_15475_",
+        "_15476_"
+      ]
+    },
+    {
+      "buses": [
+        "SFR_DOUT"
+      ],
+      "ff_count": 8,
+      "samples": [
+        "_15414_",
+        "_15412_",
+        "_15413_",
+        "_15408_",
+        "_15409_"
+      ]
+    },
+    {
+      "buses": [
+        "RAM_ADDR"
+      ],
+      "ff_count": 8,
+      "samples": [
+        "_14235_",
+        "_14238_",
+        "_14240_",
+        "_14242_",
+        "_14236_"
+      ]
+    },
+    {
+      "buses": [
+        "PC_LOW"
+      ],
+      "ff_count": 8,
+      "samples": [
+        "_15392_",
+        "_15393_",
+        "_15394_",
+        "_15395_",
+        "_15397_"
+      ]
+    },
+    {
+      "buses": [
+        "IR"
+      ],
+      "ff_count": 7,
+      "samples": [
+        "_15096_",
+        "_15098_",
+        "_15097_",
+        "_15099_",
+        "_15100_"
+      ]
+    },
+    {
+      "buses": [
+        "PSW_FLAGS"
+      ],
+      "ff_count": 3,
+      "samples": [
+        "_15419_",
+        "_15417_",
+        "_15418_"
+      ]
+    },
+    {
+      "buses": [
+        "RAM_DATA"
+      ],
+      "ff_count": 3,
+      "samples": [
+        "_15432_",
+        "_15430_",
+        "_15431_"
+      ]
+    }
+  ],
+  "total_grouped": 121,
+  "num_groups": 15
+}

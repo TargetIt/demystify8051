@@ -1,0 +1,242 @@
+[
+  {
+    "name": "_07126_",
+    "width": 7,
+    "drivers": 28,
+    "readers": 559,
+    "total_fanout": 859,
+    "avg_fanout_per_bit": 122.71428571428571
+  },
+  {
+    "name": "_07111_",
+    "width": 16,
+    "drivers": 16,
+    "readers": 208,
+    "total_fanout": 236,
+    "avg_fanout_per_bit": 14.75
+  },
+  {
+    "name": "_07109_",
+    "width": 8,
+    "drivers": 8,
+    "readers": 178,
+    "total_fanout": 199,
+    "avg_fanout_per_bit": 24.875
+  },
+  {
+    "name": "_07121_",
+    "width": 8,
+    "drivers": 8,
+    "readers": 179,
+    "total_fanout": 183,
+    "avg_fanout_per_bit": 22.875
+  },
+  {
+    "name": "_07110_",
+    "width": 8,
+    "drivers": 8,
+    "readers": 132,
+    "total_fanout": 173,
+    "avg_fanout_per_bit": 21.625
+  },
+  {
+    "name": "_07104_",
+    "width": 3,
+    "drivers": 4,
+    "readers": 101,
+    "total_fanout": 167,
+    "avg_fanout_per_bit": 55.666666666666664
+  },
+  {
+    "name": "_07127_",
+    "width": 12,
+    "drivers": 12,
+    "readers": 100,
+    "total_fanout": 143,
+    "avg_fanout_per_bit": 11.916666666666666
+  },
+  {
+    "name": "_07076_",
+    "width": 8,
+    "drivers": 8,
+    "readers": 113,
+    "total_fanout": 140,
+    "avg_fanout_per_bit": 17.5
+  },
+  {
+    "name": "_07057_",
+    "width": 8,
+    "drivers": 8,
+    "readers": 117,
+    "total_fanout": 128,
+    "avg_fanout_per_bit": 16.0
+  },
+  {
+    "name": "_07067_",
+    "width": 8,
+    "drivers": 8,
+    "readers": 70,
+    "total_fanout": 101,
+    "avg_fanout_per_bit": 12.625
+  },
+  {
+    "name": "_07108_",
+    "width": 8,
+    "drivers": 8,
+    "readers": 57,
+    "total_fanout": 57,
+    "avg_fanout_per_bit": 7.125
+  },
+  {
+    "name": "_07123_",
+    "width": 8,
+    "drivers": 8,
+    "readers": 35,
+    "total_fanout": 53,
+    "avg_fanout_per_bit": 6.625
+  },
+  {
+    "name": "_07143_",
+    "width": 8,
+    "drivers": 8,
+    "readers": 46,
+    "total_fanout": 53,
+    "avg_fanout_per_bit": 6.625
+  },
+  {
+    "name": "_07112_",
+    "width": 3,
+    "drivers": 3,
+    "readers": 40,
+    "total_fanout": 49,
+    "avg_fanout_per_bit": 16.333333333333332
+  },
+  {
+    "name": "_07106_",
+    "width": 8,
+    "drivers": 8,
+    "readers": 47,
+    "total_fanout": 47,
+    "avg_fanout_per_bit": 5.875
+  },
+  {
+    "name": "_07102_",
+    "width": 8,
+    "drivers": 8,
+    "readers": 40,
+    "total_fanout": 40,
+    "avg_fanout_per_bit": 5.0
+  },
+  {
+    "name": "_07155_",
+    "width": 8,
+    "drivers": 8,
+    "readers": 25,
+    "total_fanout": 34,
+    "avg_fanout_per_bit": 4.25
+  },
+  {
+    "name": "_07124_",
+    "width": 8,
+    "drivers": 8,
+    "readers": 32,
+    "total_fanout": 32,
+    "avg_fanout_per_bit": 4.0
+  },
+  {
+    "name": "_07157_",
+    "width": 8,
+    "drivers": 8,
+    "readers": 24,
+    "total_fanout": 32,
+    "avg_fanout_per_bit": 4.0
+  },
+  {
+    "name": "_07154_",
+    "width": 8,
+    "drivers": 8,
+    "readers": 26,
+    "total_fanout": 30,
+    "avg_fanout_per_bit": 3.75
+  },
+  {
+    "name": "_07156_",
+    "width": 8,
+    "drivers": 8,
+    "readers": 25,
+    "total_fanout": 29,
+    "avg_fanout_per_bit": 3.625
+  },
+  {
+    "name": "_07229_",
+    "width": 9,
+    "drivers": 9,
+    "readers": 17,
+    "total_fanout": 29,
+    "avg_fanout_per_bit": 3.2222222222222223
+  },
+  {
+    "name": "_07188_",
+    "width": 10,
+    "drivers": 10,
+    "readers": 27,
+    "total_fanout": 28,
+    "avg_fanout_per_bit": 2.8
+  },
+  {
+    "name": "_07063_",
+    "width": 8,
+    "drivers": 8,
+    "readers": 24,
+    "total_fanout": 24,
+    "avg_fanout_per_bit": 3.0
+  },
+  {
+    "name": "_07189_",
+    "width": 4,
+    "drivers": 4,
+    "readers": 12,
+    "total_fanout": 20,
+    "avg_fanout_per_bit": 5.0
+  },
+  {
+    "name": "_06895_",
+    "width": 8,
+    "drivers": 8,
+    "readers": 16,
+    "total_fanout": 16,
+    "avg_fanout_per_bit": 2.0
+  },
+  {
+    "name": "_06896_",
+    "width": 8,
+    "drivers": 8,
+    "readers": 16,
+    "total_fanout": 16,
+    "avg_fanout_per_bit": 2.0
+  },
+  {
+    "name": "_06897_",
+    "width": 8,
+    "drivers": 8,
+    "readers": 16,
+    "total_fanout": 16,
+    "avg_fanout_per_bit": 2.0
+  },
+  {
+    "name": "_06898_",
+    "width": 8,
+    "drivers": 8,
+    "readers": 16,
+    "total_fanout": 16,
+    "avg_fanout_per_bit": 2.0
+  },
+  {
+    "name": "_06899_",
+    "width": 8,
+    "drivers": 8,
+    "readers": 16,
+    "total_fanout": 16,
+    "avg_fanout_per_bit": 2.0
+  }
+]
