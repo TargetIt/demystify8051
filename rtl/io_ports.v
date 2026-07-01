@@ -21,8 +21,8 @@ module io_ports (
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            p0_reg <= 8'hFF; p1_reg <= 8'hFF;
-            p2_reg <= 8'hFF; p3_reg <= 8'hFF;
+            p0_reg <= 8'h03; p1_reg <= 8'h3C;
+            p2_reg <= 8'h03; p3_reg <= 8'h03;
         end else begin
             if (p0_wr_en) p0_reg <= p0_wr;
             if (p1_wr_en) p1_reg <= p1_wr;

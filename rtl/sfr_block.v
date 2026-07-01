@@ -40,7 +40,7 @@ module sfr_block (
     // SFR initialization: Ports=0xFF, SP=0x07, others=0x00
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            p0 <= 8'hFF; p1 <= 8'hFF; p2 <= 8'hFF; p3 <= 8'hFF;
+            p0 <= 8'h03; p1 <= 8'h3C; p2 <= 8'h03; p3 <= 8'h03;
             sp <= 8'h07;
             {dph, dpl} <= 16'h0000;
             pcon <= 5'h00;
