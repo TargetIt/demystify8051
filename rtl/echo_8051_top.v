@@ -33,13 +33,17 @@ module echo_8051_top (
     // ── FSM control ──
     wire [2:0]  fsm_state;
     wire [7:0]  ctrl_bus;
-    wire        fetch_en, exec_en;
+    wire        exec_en;
+    // fetch_en is combinational: active in FETCH(0), FETCH2(6), FETCH3(7)
+    wire fetch_en = (fsm_state == 3'd0) || (fsm_state == 3'd6) || (fsm_state == 3'd7);
 
     // ── CPU registers ──
     reg  [7:0]  acc, b_reg;
     reg  [15:0] pc;
     reg  [7:0]  sp;
     reg  [7:0]  ir;                  // instruction register
+    reg  [7:0]  op1, op2;            // operand bytes
+    reg  [1:0]  byte_pos;            // 0=opcode, 1=op1, 2=op2
 
     // ── ALU signals ──
     wire [7:0]  alu_result;
@@ -78,17 +82,25 @@ module echo_8051_top (
     // ════════════════════════════════════════
 
     // Decoder
+    wire is_mov_op, use_imm, reg_rd, reg_wr;
     decoder u_decoder (
         .opcode(ir), .alu_op(alu_op),
         .acc_write(acc_write), .b_write(b_write), .psw_write(psw_write),
         .ram_rd(ram_rd), .ram_wr(ram_wr), .sfr_rd(sfr_rd), .sfr_wr(sfr_wr),
         .pc_inc(pc_inc), .pc_load(pc_load), .sp_inc(sp_inc), .sp_dec(sp_dec),
-        .operand_bytes(operand_bytes)
+        .operand_bytes(operand_bytes), .is_mov_op(is_mov_op), .use_imm(use_imm),
+        .reg_rd(reg_rd), .reg_wr(reg_wr)
     );
 
-    // ALU
+    // Register file rf_rdata — declared early for alu_a reference below
+    wire [7:0] rf_rdata;
+
+    // ALU A-input: reg file for INC/DEC Rn, otherwise ACC
+    wire [7:0] alu_a = (reg_rd && ir[7:3] != 5'b11101) ? rf_rdata : acc;
+    // ALU B-input: immediate for ADD/SUBB/etc A,#imm, else B register
+    wire [7:0] alu_b = use_imm ? op1 : b_reg;
     alu u_alu (
-        .a(acc), .b(b_reg), .carry_in(psw_flags[2]),
+        .a(alu_a), .b(alu_b), .carry_in(psw_flags[2]),
         .op(alu_op), .result(alu_result), .carry_out(cy), .aux_carry(ac), .overflow(ov)
     );
 
@@ -97,7 +109,7 @@ module echo_8051_top (
         .clk(clk), .rst_n(rst_n),
         .opcode_valid(1'b1), .operand_bytes(operand_bytes),
         .interrupt_pending(int_active), .state(fsm_state),
-        .ctrl_out(ctrl_bus), .fetch_en(fetch_en), .exec_en(exec_en)
+        .ctrl_out(ctrl_bus), .fetch_en(), .exec_en(exec_en)
     );
 
     // PSW
@@ -149,7 +161,7 @@ module echo_8051_top (
         .p0_wr(internal_bus), .p1_wr(internal_bus), .p2_wr(internal_bus), .p3_wr(internal_bus),
         .p0_wr_en(sfr_wr && addr_bus[7:0]==8'h80), .p1_wr_en(sfr_wr && addr_bus[7:0]==8'h90),
         .p2_wr_en(sfr_wr && addr_bus[7:0]==8'hA0), .p3_wr_en(sfr_wr && addr_bus[7:0]==8'hB0),
-        .p0_rd(internal_bus), .p1_rd(internal_bus), .p2_rd(internal_bus), .p3_rd(internal_bus),
+        .p0_rd(), .p1_rd(), .p2_rd(), .p3_rd(),
         .p0_out(p0_out), .p1_out(p1_out), .p2_out(p2_out), .p3_out(p3_out),
         .p0_in(p0_in), .p1_in(p1_in), .p2_in(p2_in), .p3_in(p3_in)
     );
@@ -164,17 +176,31 @@ module echo_8051_top (
     assign rd_n = 1'b1;    // no external reads
     assign wr_n = 1'b1;    // no external writes
 
+    // ── Register File: R0-R7 (bank 0 only, 8 bytes) ──
+    reg [7:0] R0, R1, R2, R3, R4, R5, R6, R7;
+    wire [2:0] rf_idx = ir[2:0];
+    assign rf_rdata = (rf_idx == 3'd0) ? R0 : (rf_idx == 3'd1) ? R1 :
+                      (rf_idx == 3'd2) ? R2 : (rf_idx == 3'd3) ? R3 :
+                      (rf_idx == 3'd4) ? R4 : (rf_idx == 3'd5) ? R5 :
+                      (rf_idx == 3'd6) ? R6 : R7;
+
     // ── Internal data bus mux ──
-    assign internal_bus = ram_rd ? iram_rdata :
-                          sfr_rd ? sfr_rdata :
-                          acc_write ? alu_result :
+    wire reg_wr_imm = reg_wr && (ir[7:3] == 5'b01111); // MOV Rn,#imm
+    wire reg_wr_acc = reg_wr && (ir[7:3] == 5'b11111); // MOV Rn,A
+    assign internal_bus = reg_rd     ? rf_rdata :
+                          is_mov_op  ? op1 :
+                          reg_wr_imm ? op1 :     // MOV Rn,#imm data
+                          reg_wr_acc ? acc :     // MOV Rn,A data
+                          ram_rd     ? iram_rdata :
+                          sfr_rd     ? sfr_rdata :
+                          acc_write  ? alu_result :
                           8'h00;
 
     // ── Address bus ──
-    assign addr_bus = dptr; // simplified — use DPTR for address
+    assign addr_bus = {8'h00, op1};
 
-    // ── Instruction fetch (simplified) ──
-    reg [7:0] prom [0:4095]; // 4KB ROM (behavioral, not in gate netlist)
+    // ── Instruction fetch ──
+    reg [7:0] prom [0:4095]; // 4KB ROM
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -183,25 +209,73 @@ module echo_8051_top (
             acc <= 8'h00;
             b_reg <= 8'h00;
             ir <= 8'h00;
+            op1 <= 8'h00;
+            op2 <= 8'h00;
+            byte_pos <= 2'd0;
+            R0 <= 8'h00; R1 <= 8'h00; R2 <= 8'h00; R3 <= 8'h00;
+            R4 <= 8'h00; R5 <= 8'h00; R6 <= 8'h00; R7 <= 8'h00;
         end else begin
+            // byte_pos: reset at FETCH (blocking, so fetch sees correct value)
+            if (fsm_state == 3'd0) byte_pos = 2'd0;
+            else if (fetch_en) byte_pos = byte_pos + 2'd1;
+
+            // fetch_en is combinational: only high during FETCH(0), FETCH2(6), FETCH3(7)
+            // byte_pos: 0=FETCH (ir+op1 pre-fetch), 1=FETCH2 (op2 pre-fetch), 2=FETCH3 (op2)
             if (fetch_en) begin
-                ir <= prom[pc]; // fetch opcode from ROM
-                if (pc_inc) pc <= pc + 16'd1;
-                if (pc_load && exec_en) begin
-                    if (int_active) pc <= int_vector;
-                    else pc <= addr_bus; // jump/call target
+                if (byte_pos == 2'd0) begin
+                    ir <= prom[pc];
+                    op1 <= prom[pc + 16'd1]; // pre-fetch operand
+                end else if (byte_pos == 2'd1) begin
+                    // op1 already pre-fetched in FETCH — don't overwrite
+                    op2 <= prom[pc + 16'd1]; // pre-fetch 3rd byte
+                end else begin
+                    op2 <= prom[pc]; // actual 3rd byte
                 end
+                if (pc_inc) pc <= pc + 16'd1;
+                if (pc_load && exec_en) pc <= {op1, op2};
             end
             if (sp_inc) sp <= sp + 8'd1;
             if (sp_dec) sp <= sp - 8'd1;
-            if (acc_write && exec_en) acc <= alu_result;
-            if (b_write && exec_en) b_reg <= alu_result;
+            if (exec_en) begin
+                if (acc_write) acc <= internal_bus;
+                if (b_write)   b_reg <= internal_bus;
+                if (reg_wr) begin
+                    case (ir[2:0])
+                        3'd0: R0 <= internal_bus;
+                        3'd1: R1 <= internal_bus;
+                        3'd2: R2 <= internal_bus;
+                        3'd3: R3 <= internal_bus;
+                        3'd4: R4 <= internal_bus;
+                        3'd5: R5 <= internal_bus;
+                        3'd6: R6 <= internal_bus;
+                        3'd7: R7 <= internal_bus;
+                    endcase
+                end
+            end
         end
     end
 
     // ── ROM initialization ──
+    integer i;
     initial begin
-        $readmemh("tb/isa_tests/smoke_test_raw.hex", prom);
+        for (i = 0; i < 4096; i = i + 1) prom[i] = 8'h00;
+        prom[0]=8'h74; prom[1]=8'h42; prom[2]=8'h78; prom[3]=8'h55;
+        prom[4]=8'h79; prom[5]=8'h33; prom[6]=8'hE8;
+        prom[7]=8'h24; prom[8]=8'h20; prom[9]=8'hC3;
+        prom[10]=8'h94; prom[11]=8'h25; prom[12]=8'h54; prom[13]=8'h0F;
+        prom[14]=8'h44; prom[15]=8'hAA; prom[16]=8'h64; prom[17]=8'h55;
+        prom[18]=8'h04; prom[19]=8'h14; prom[20]=8'h04; prom[21]=8'h04; prom[22]=8'h04;
+        prom[23]=8'hC4; prom[24]=8'hF4; prom[25]=8'hE4;
+        prom[26]=8'h74; prom[27]=8'h0A; prom[28]=8'h75; prom[29]=8'hF0; prom[30]=8'h06;
+        prom[31]=8'hA4; prom[32]=8'hF5; prom[33]=8'h90;
+        prom[34]=8'h74; prom[35]=8'h0F; prom[36]=8'h75; prom[37]=8'hF0; prom[38]=8'h04;
+        prom[39]=8'h84; prom[40]=8'hF5; prom[41]=8'hA0;
+        prom[42]=8'h78; prom[43]=8'h03; prom[44]=8'hE4; prom[45]=8'h04;
+        prom[46]=8'hD8; prom[47]=8'hFD; prom[48]=8'hF5; prom[49]=8'hB0;
+        prom[50]=8'hC0; prom[51]=8'hE0; prom[52]=8'hE4;
+        prom[53]=8'hD0; prom[54]=8'hE0; prom[55]=8'hF5; prom[56]=8'h80;
+        prom[57]=8'hD3; prom[58]=8'hC3; prom[59]=8'hB3; prom[60]=8'h80; prom[61]=8'hFE;
+        $display("Crossval program loaded: 62 bytes");
     end
 
 endmodule

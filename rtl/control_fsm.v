@@ -55,7 +55,7 @@ module control_fsm (
                 FETCH2: begin
                     fetch_en <= 1'b1;
                     byte_cnt <= byte_cnt - 2'd1;
-                    if (byte_cnt == 2'd1)
+                    if (byte_cnt > 2'd1)
                         state <= FETCH3;
                     else
                         state <= EXEC1;
