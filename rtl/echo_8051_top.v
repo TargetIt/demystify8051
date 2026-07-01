@@ -200,30 +200,8 @@ module echo_8051_top (
     end
 
     // ── ROM initialization ──
-    // Load from Intel HEX via simple parser
-    integer fd, i, addr, byte_val, rec_type, rec_len;
-    reg [7:0] hex_bytes [0:255];
     initial begin
-        // Default: fill with NOP (0x00) — many 8051 tools emit 0x00 for unused
-        for (i = 0; i < 4096; i = i + 1) prom[i] = 8'h00;
-        // Try loading hex file
-        fd = $fopen("tb/isa_tests/smoke_test.hex", "r");
-        if (fd) begin
-            while (!$feof(fd)) begin
-                $fscanf(fd, ":%2h%4h%2h", rec_len, addr, rec_type);
-                if (rec_type == 8'h00) begin
-                    for (i = 0; i < rec_len; i = i + 1) begin
-                        $fscanf(fd, "%2h", byte_val);
-                        prom[addr+i] = byte_val;
-                    end
-                end
-                $fscanf(fd, "%*2h\n"); // skip checksum
-            end
-            $fclose(fd);
-            $display("Loaded %0d bytes from smoke_test.hex", addr + rec_len);
-        end else begin
-            $display("WARNING: Could not open smoke_test.hex — ROM filled with NOPs");
-        end
+        $readmemh("tb/isa_tests/smoke_test_raw.hex", prom);
     end
 
 endmodule
