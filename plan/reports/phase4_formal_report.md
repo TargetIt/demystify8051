@@ -144,4 +144,31 @@ Total $equiv cells:  37
 | 补充验证 | 形式化验证不能替代仿真回归。至少需要运行指令集交叉验证（43 条用例）作为形式化的补充 |
 | 风险披露 | 报告中应明确声明方法局限，避免将"形式化通过"等同于"设计无 bug" |
 
+### 8.5 改进建议的验证结果（2026-07-02）
+
+按照 §8.4 建议重新运行了形式化验证：
+
+| 改进项 | 尝试 | 结果 |
+|--------|------|------|
+| `-seq 20` | 深度从 4 增加到 20 | **无效** — Proven 数不变（仍为 1），unproven 仍为 36 |
+| Liberty 替代 blackbox | `read_liberty` + `dfflibmap` + `abc -liberty` | **失败** — Yosys SAT 无法从 liberty 文件提取 SKY130 单元的布尔函数 |
+| SKY130 Verilog 模型 | `read_verilog primitives.v` | **失败** — Yosys 不支持 Verilog UDP 原语（`primitive` 关键字） |
+| 重新综合后比对 | RTL 重新综合→SKY130 vs 原始网表 | **失败** — SAT 仍然报 "No SAT model available for sky130_fd_sc_hd__*" |
+
+### 8.6 工具链硬限制
+
+经过多种方案尝试，确认以下为 Yosys 开源形式化验证在当前 SKY130 PDK 上的**不可逾越的硬限制**：
+
+1. **Sky130 PDK 不提供 Yosys SAT 兼容的功能模型**：PDK 提供的模型形式为 UDP 原语（Yosys 不支持）和 liberty 时序文件（Yosys 无法提取 SAT 布尔函数）
+2. **`-ignore-unknown-cells` 使验证对 RTL bug 无感**：无论 RTL 有 15 个 bug 还是修完后，形式化结果恒为 "36 unproven (IO), 1 proven"——该方法无法区分正确和错误的 RTL
+3. **增加 `-seq` 深度无效**：在黑盒模型下，`-seq 4` 和 `-seq 20` 结果完全一致（"Proved 0 previously unproven"）
+
+### 8.7 结论更新
+
+原始报告的 "100% 内部逻辑等价" 结论在形式化方法论范围内成立，但方法论本身**无法对 RTL 的功能正确性做出有意义的判断**。真实的等价性需要通过仿真回归（交叉验证 42/43）来确认。未来若需真正严格的形式化等价验证，需要：
+
+1. 使用支持 Sky130 UDP 原语的商业工具（如 Cadence JasperGold、Synopsys Formality）
+2. 或为所有 8,544 个 SKY130 单元手工编写 Yosys 兼容的功能模型
+3. 或使用非 SKY130 的目标工艺（如 generic CMOS 库）进行等价性验证
+
 *审计完毕。*
