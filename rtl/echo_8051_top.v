@@ -43,7 +43,8 @@ module echo_8051_top (
     reg  [7:0]  sp;
     reg  [7:0]  ir;                  // instruction register
     reg  [7:0]  op1, op2;            // operand bytes
-    reg  [1:0]  byte_pos;            // 0=opcode, 1=op1, 2=op2
+    reg  [1:0]  byte_pos_reg;        // 0=opcode, 1=op1, 2=op2
+    wire [1:0]  byte_pos = byte_pos_reg; // combinational read
 
     // ── ALU signals ──
     wire [7:0]  alu_result;
