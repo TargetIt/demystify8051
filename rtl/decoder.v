@@ -83,7 +83,7 @@ module decoder (
     // ALU operation encoding
     assign alu_op = is_add  ? 4'h0 : is_addc ? 4'h1 : is_subb ? 4'h2 :
                     is_anl  ? 4'h3 : is_orl  ? 4'h4 : is_xrl  ? 4'h5 :
-                    is_inc  ? 4'h6 : is_dec  ? 4'h7 : is_da   ? 4'h8 :
+                    is_inc  ? 4'h6 : (is_dec || is_djnz) ? 4'h7 : is_da ? 4'h8 :
                     is_rl   ? 4'h9 : is_rlc  ? 4'hA : is_rr   ? 4'hB :
                     is_rrc  ? 4'hC : is_swap ? 4'hD : is_cpl  ? 4'hE :
                     is_clr  ? 4'hF : 4'h0;  // default: ADD (NOP)

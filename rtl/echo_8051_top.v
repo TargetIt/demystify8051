@@ -118,10 +118,17 @@ module echo_8051_top (
         .flags_in({cy, ac, ov}), .flags_out(psw_flags), .psw_out(psw_val)
     );
 
+    // IRAM address: sp for POP, sp+1 for PUSH, addr_bus otherwise
+    wire is_push_op = (ir == 8'hC0);
+    wire is_pop_op  = (ir == 8'hD0);
+    wire [7:0] iram_addr;
+    assign iram_addr = is_push_op ? (sp + 8'd1) :
+                       is_pop_op  ? sp : addr_bus[7:0];
+
     // IRAM — 128 bytes
     iram u_iram (
         .clk(clk), .rst_n(rst_n), .ram_rd(ram_rd), .ram_wr(ram_wr),
-        .addr(addr_bus[7:0]), .wdata(internal_bus), .rdata(iram_rdata)
+        .addr(iram_addr), .wdata(internal_bus), .rdata(iram_rdata)
     );
 
     // SFR Block
@@ -193,19 +200,25 @@ module echo_8051_top (
     wire [7:0] cy_data = (ir == 8'hC3) ? (psw_val & 8'h7F) :
                          (ir == 8'hD3) ? (psw_val | 8'h80) :
                          (psw_val ^ 8'h80); // CPL C
-    assign internal_bus = reg_rd         ? rf_rdata :
+    // For reg_wr ops that also read (INC/DEC/DJNZ Rn), ALU result has priority
+    wire reg_alu_op = reg_rd && reg_wr; // INC Rn, DEC Rn, DJNZ Rn — use ALU result
+    wire push_acc = is_push_op && (op1 == 8'hE0); // PUSH ACC: use top-level acc
+    assign internal_bus = (reg_rd && !reg_alu_op) ? rf_rdata : // MOV A,Rn: read only
                           is_mov_op      ? op1 :
                           reg_wr_imm     ? op1 :     // MOV Rn,#imm data
                           reg_wr_acc     ? acc :     // MOV Rn,A data
                           is_mov_dir_a   ? acc :     // MOV direct,A data
                           is_mov_dir_imm ? op2 :     // MOV direct,#imm data
+                          reg_alu_op     ? alu_result : // INC/DEC/DJNZ Rn result
+                          push_acc       ? acc :     // PUSH ACC data
                           cy_active      ? cy_data : // CLR/SETB/CPL C
                           ram_rd         ? iram_rdata :
                           sfr_rd         ? sfr_rdata :
                           acc_write      ? alu_result :
                           8'h00;
 
-    // ── Address bus ──
+    // ── Address bus (reg for PUSH/POP dual-address handling) ──
+    // addr_bus: SFR address (op1 for MOV direct, 0xD0 for carry ops)
     assign addr_bus = cy_active ? {8'h00, 8'hD0} : {8'h00, op1};
 
     // ── Instruction fetch ──
@@ -248,15 +261,16 @@ module echo_8051_top (
                 else if (is_djnz && alu_result != 8'd0) pc <= pc + {{8{op1[7]}}, op1}; // DJNZ relative
                 else if (!is_djnz) pc <= {op1, op2}; // LJMP/LCALL absolute
             end
-            if (sp_inc) sp <= sp + 8'd1;
-            if (sp_dec) sp <= sp - 8'd1;
+            // SP updates only during EXEC2, once per instruction
+            if (sp_inc && fsm_state == 3'd3) sp <= sp + 8'd1;
+            if (sp_dec && fsm_state == 3'd3) sp <= sp - 8'd1;
             // Write only during EXEC2 (state 3), not WRITEBK (state 4)
             // to avoid double-write with updated ALU inputs
             // Sync top-level b_reg from SFR write to B (0xF0)
             if (sfr_wr && addr_bus[7:0] == 8'hF0) b_reg <= internal_bus;
 
-            if (exec_en && fsm_state == 3'd3) begin
-                // MUL AB / DIV AB handled directly (not in ALU)
+            // PUSH/POP direct handling
+                    if (exec_en && fsm_state == 3'd3) begin
                 if (ir == 8'hA4) begin // MUL AB
                     {b_reg, acc} <= acc * b_reg;
                 end else if (ir == 8'h84) begin // DIV AB
